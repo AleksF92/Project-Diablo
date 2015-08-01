@@ -3,8 +3,8 @@
   <spriteName>spr_Player</spriteName>
   <solid>0</solid>
   <visible>-1</visible>
-  <depth>0</depth>
-  <persistent>-1</persistent>
+  <depth>-1</depth>
+  <persistent>0</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
   <events>
@@ -26,50 +26,13 @@
           <argument>
             <kind>1</kind>
             <string>///Initialize variables
-
-//Experience variables
-level = 1;
-xp = 0;
-xpRequired = 100;
-
-//Power variables
-strength = 1;
-agility = 1;
-intellect = 1;
-
-//Combat variables
-hp = 100;
-hpMax = 100;
-mana = 100;
-manaMax = 100;
-cdFractal = room_speed * 0.5;
-
-//Movement variables
-walkSpeed = 4;
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>///Initialize window &amp; settings
-window_set_fullscreen(true);
-draw_set_font(fnt_NPC);
-draw_set_colour(c_white);
+type = 1;
+range = 128;
+name = "Unnamed NPC";
+speech = 0;
+speechList = ds_list_create();
+ds_list_add(speechList, "This NPC has nothing to say.");
+speechDuration = room_speed * 5;
 </string>
           </argument>
         </arguments>
@@ -92,7 +55,18 @@ draw_set_colour(c_white);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Cooldown for fractal is ready
+            <string>///Speech done, progress
+
+//Look for more speech
+if (ds_list_size(speechList) &gt; speech + 1) {
+    //Go to next speech
+    speech++;
+    alarm[0] = speechDuration;
+}
+else {
+    //Reset speech
+    speech = 0;
+}
 </string>
           </argument>
         </arguments>
@@ -115,62 +89,22 @@ draw_set_colour(c_white);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Input handling
-
-//Movement
-if (keyboard_check(ord("A"))) {
-    x -= walkSpeed;
-}
-if (keyboard_check(ord("D"))) {
-    x += walkSpeed;
-}
-if (keyboard_check(ord("W"))) {
-    y -= walkSpeed;
-}
-if (keyboard_check(ord("S"))) {
-    y += walkSpeed;
-}
-
-//Interface &amp; hotkeys
-if (keyboard_check_pressed(vk_escape)) {
-    game_end();
-}
-
-if (mouse_check_button(mb_left)) {
-    //Check for cooldown
-    if (!alarm[0]) {
-        alarm[0] = cdFractal;
-        
-        //Make fractal bullet
-        var b = instance_create(x, y, obj_Fractal);
-        b.image_angle = image_angle;
-        with (b) {
-            motion_set(image_angle, 12);
+            <string>///Look at target
+var t = instance_nearest(x, y, obj_Player);
+if (distance_to_object(t) &lt;= range) {
+    image_angle = point_direction(x, y, t.x, t.y);
+    
+    //Check for interaction
+    if (keyboard_check_pressed(vk_space)) {
+        //Interact
+        if (alarm[0]) {
+            alarm[0] = 1;
+        }
+        else {
+            alarm[0] = speechDuration;
         }
     }
 }
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>///Look at mouse
-image_angle = point_direction(x, y, mouse_x, mouse_y);
 </string>
           </argument>
         </arguments>
@@ -194,7 +128,12 @@ image_angle = point_direction(x, y, mouse_x, mouse_y);
           <argument>
             <kind>1</kind>
             <string>///Draw character
-draw_sprite_ext(sprite_index, 0, x, y, 1, 1, image_angle, c_white, 1);
+draw_sprite_ext(sprite_index, type, x, y, 1, 1, image_angle, c_white, 1);
+
+//Draw text
+if (alarm[0]) {
+    draw_text_centered(x, y - 32, "[" + name + "]#" + speechList[| speech]);
+}
 </string>
           </argument>
         </arguments>
