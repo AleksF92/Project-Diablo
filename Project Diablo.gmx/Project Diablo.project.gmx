@@ -7,6 +7,8 @@
   <sounds name="sound"/>
   <sprites name="sprites">
     <sprite>sprites\spr_Player</sprite>
+    <sprite>sprites\spr_Enemy</sprite>
+    <sprite>sprites\spr_NPC</sprite>
     <sprite>sprites\spr_Fractal</sprite>
   </sprites>
   <backgrounds name="background">
@@ -15,6 +17,7 @@
   <paths name="paths"/>
   <scripts name="scripts">
     <script>scripts\draw_text_centered.gml</script>
+    <script>scripts\randomRound.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_NPC</font>
@@ -23,6 +26,7 @@
     <object>objects\obj_Player</object>
     <object>objects\obj_Fractal</object>
     <object>objects\obj_NPC</object>
+    <object>objects\obj_Enemy</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\rom_World</room>
