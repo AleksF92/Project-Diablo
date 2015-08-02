@@ -39,9 +39,55 @@ var pl = obj_Player.level;
 level = randomRound(pl, pl + 2);
 hpMax = 50 * (level + 1);
 hp = hpMax;
+target = noone;
+aggroRange = 0;
+targetDist = 0;
+fov = 60;
 
 //Movement variables
-walkSpeed = 4;
+walkSpeed = 3;
+path = 0;
+grid = 0;
+guardX = x;
+guardY = y;
+returning = false;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="2" enumb="3">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Target lost
+if (!dead) {
+    target = noone;
+    path_end();
+    
+    //Follow target
+    var cell = 32;
+    grid = mp_grid_create(0, 0, room_width / cell, room_height / cell, cell, cell);
+    path = path_add();
+    mp_grid_add_instances(grid, obj_Terrain, false);
+    mp_grid_path(grid, path, x, y, guardX, guardY, true);
+    path_start(path, walkSpeed, "", false);
+    returning = true;
+    lookGoal = 0;
+}
 </string>
           </argument>
         </arguments>
@@ -89,14 +135,14 @@ hit = false;
           <argument>
             <kind>1</kind>
             <string>///Check for death
-event_inherited();
-
+if (hp &lt;= 0 &amp;&amp; !dead) {
+    dead = true;
+    path_end();
+}
 </string>
           </argument>
         </arguments>
       </action>
-    </event>
-    <event eventtype="4" ename="obj_Fractal">
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -113,18 +159,96 @@ event_inherited();
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Apply damage
-if (hp) {
-    hit = true;
-    alarm[2] = room_speed * 5;
-    
-    hp -= other.damage;
-    if (hp &lt;= 0) {
-        dead = true;
+            <string>///Check max range
+aggroRange = 16;
+var wall = noone;
+while (!wall &amp;&amp; aggroRange &lt; 16 * 24) {
+    var x2 = x + lengthdir_x(aggroRange, image_angle);
+    var y2 = y + lengthdir_y(aggroRange, image_angle);
+    wall = collision_line(x, y, x2, y2, obj_Terrain, false, true);
+    aggroRange += 16;
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Check for target
+if (!dead) {
+    if (target) {
+        targetDist = distance_to_object(target);
+        if (targetDist &lt;= floor(aggroRange * 0.8)) {
+            //Target OK, refresh
+            alarm[3] = 0;
+            target.hp -= 0.5;
+        }
+        else {
+            //Target lost, set timer once
+            if (!alarm[3]) {
+                alarm[3] = room_speed * 5;
+                returning = false;
+            }
+            
+            //Follow target
+            var cell = 32;
+            grid = mp_grid_create(0, 0, room_width / cell, room_height / cell, cell, cell);
+            path = path_add();
+            mp_grid_add_instances(grid, obj_Terrain, false);
+            mp_grid_path(grid, path, x, y, target.x, target.y, true);
+            path_start(path, walkSpeed, "", false);
+        }
+    }
+    else {
+        var x2 = x + lengthdir_x(aggroRange, image_angle + (fov / 2));
+        var y2 = y + lengthdir_y(aggroRange, image_angle + (fov / 2));
+        var x3 = x + lengthdir_x(aggroRange, image_angle - (fov / 2));
+        var y3 = y + lengthdir_y(aggroRange, image_angle - (fov / 2));
+        target = player_in_triangle(x, y, x2, y2, x3, y3);
     }
     
-    with (other) {
-        instance_destroy();
+    //Has checked for new target
+    if (target) {
+        image_angle = point_direction(x, y, target.x, target.y);
+    }
+    else {
+        //Look random
+        if (lookGoal != 0) {
+            var inc = (lookGoal / max(lookGoal, -lookGoal));
+            image_angle += inc;
+            lookGoal -= inc;
+        }
+        else {
+            if (!alarm[1]) {
+                if (returning) {
+                    var f = 1 / path_get_length(path_index);
+                    image_angle = point_direction(
+                        path_get_x(path_index, path_position),
+                        path_get_y(path_index, path_position),
+                        path_get_x(path_index, path_position + f),
+                        path_get_y(path_index, path_position + f)
+                    );
+                    if (path_position) {returning = false;}
+                }
+                else {
+                    alarm[1] = randomRound(cdLookMin, cdLookMax);
+                }
+            }
+        }
     }
 }
 </string>
@@ -171,6 +295,45 @@ if (hover || hit) {
         
         //draw_text(x1, by, "PX: " + string(px));
     }
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw vision
+if (!dead) {
+    var c = c_lime;
+    if (target) {
+        c = c_red;
+    }
+    if (alarm[3]) {
+        c = c_yellow;
+    }
+    
+    var x2 = x + lengthdir_x(aggroRange, image_angle + (fov / 2));
+    var y2 = y + lengthdir_y(aggroRange, image_angle + (fov / 2));
+    var x3 = x + lengthdir_x(aggroRange, image_angle - (fov / 2));
+    var y3 = y + lengthdir_y(aggroRange, image_angle - (fov / 2));
+    
+    draw_set_alpha(0.2);
+        draw_triangle_colour(x, y, x2, y2, x3, y3, c, c, c, false);
+    draw_set_alpha(1);
 }
 </string>
           </argument>

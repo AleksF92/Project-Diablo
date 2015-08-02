@@ -34,7 +34,7 @@ dead = false;
 name = "Unnamed NPC";
 speech = 0;
 speechList = ds_list_create();
-lettersReadPerSecond = 5;
+lettersReadPerSecond = 7;
 speechDuration = (room_speed / lettersReadPerSecond);
 
 //Watching
@@ -49,6 +49,7 @@ image_angle = randomRound(0, 360);
 //Mouseover
 hover = false;
 hit = false;
+nearby = false;
 </string>
           </argument>
         </arguments>
@@ -132,10 +133,12 @@ else {
           <argument>
             <kind>1</kind>
             <string>///Look at target or random
+nearby = false;
 if (!dead) {
     var t = instance_nearest(x, y, obj_Player);
     if (distance_to_object(t) &lt;= range) {
         image_angle = point_direction(x, y, t.x, t.y);
+        nearby = true;
         
         //Check for interaction
         if (keyboard_check_pressed(vk_space)) {
@@ -151,6 +154,12 @@ if (!dead) {
         }
     }
     else {
+        //Reset speech if out of range
+        if (alarm[0]) {
+            alarm[0] = 0;
+            speech = 0;
+        }
+        
         //Look random
         if (lookGoal != 0) {
             var inc = (lookGoal / max(lookGoal, -lookGoal));
@@ -236,19 +245,24 @@ hover = true;
             <kind>1</kind>
             <string>///Draw character
 if (dead) {
-    draw_sprite_ext(sprite_index, image_index, x, y, 1, 1, 0, c_gray, 1);
+    draw_sprite_ext(sprite_index, image_index, x, y, 1, 1, image_angle, c_gray, 1);
 }
 else {
     draw_self();
 }
 var txt = "";
-if (hover || hit) {
+if (hover || hit || nearby) {
     txt = "[" + name + "]";
     if (type == "Enemy") {
         txt += "#(Lvl: " + string(level) + ")";
     }
     else {
-        txt += "#&gt; Press space nearby to talk &lt;";
+        if (nearby) {
+            txt += "#&gt; Press space to talk &lt;";
+        }
+        else {
+            txt += "#&gt; Too far away &lt;";
+        }
     }
 }
 if (alarm[0]) {
