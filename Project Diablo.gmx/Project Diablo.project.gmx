@@ -18,6 +18,7 @@
   <scripts name="scripts">
     <script>scripts\draw_text_centered.gml</script>
     <script>scripts\randomRound.gml</script>
+    <script>scripts\getBarPixels.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_NPC</font>

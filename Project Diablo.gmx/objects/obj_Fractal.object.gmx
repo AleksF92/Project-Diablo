@@ -3,7 +3,7 @@
   <spriteName>spr_Fractal</spriteName>
   <solid>0</solid>
   <visible>-1</visible>
-  <depth>0</depth>
+  <depth>-3</depth>
   <persistent>0</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
@@ -27,7 +27,7 @@
             <kind>1</kind>
             <string>///Initialize variables
 
-damage = 5;
+damage = 25;
 </string>
           </argument>
         </arguments>

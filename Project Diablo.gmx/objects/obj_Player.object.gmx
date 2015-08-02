@@ -65,11 +65,12 @@ agility = 1;
 intellect = 1;
 
 //Combat variables
-hp = 100;
 hpMax = 100;
-mana = 100;
+hp = hpMax;
 manaMax = 100;
+mana = manaMax;
 cdFractal = room_speed * 0.5;
+costFractal = 10;
 
 //Movement variables
 walkSpeed = 4;
@@ -96,6 +97,35 @@ walkSpeed = 4;
           <argument>
             <kind>1</kind>
             <string>///Cooldown for fractal is ready
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="3" enumb="1">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Regen mana
+if (floor(mana) &lt; manaMax) {
+    mana += 0.1;
+    if (mana &gt; manaMax) {
+        mana = manaMax;
+    }
+}
 </string>
           </argument>
         </arguments>
@@ -138,11 +168,15 @@ if (keyboard_check(ord("S"))) {
 if (keyboard_check_pressed(vk_escape)) {
     game_end();
 }
+if (keyboard_check_pressed(ord("R"))) {
+    room_restart();
+}
 
 if (mouse_check_button(mb_left)) {
     //Check for cooldown
-    if (!alarm[0]) {
+    if (!alarm[0] &amp;&amp; mana &gt;= costFractal) {
         alarm[0] = cdFractal;
+        mana -= costFractal;
         
         //Make fractal bullet
         var b = instance_create(x, y, obj_Fractal);
@@ -174,6 +208,49 @@ if (mouse_check_button(mb_left)) {
             <kind>1</kind>
             <string>///Look at mouse
 image_angle = point_direction(x, y, mouse_x, mouse_y);
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="8" enumb="64">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw character info
+var txt = "CHARACTER INFORMATION#" +
+    "#Health: " + string(floor(hp)) + "/" + string(hpMax) +
+    "#Mana: " + string(floor(mana)) + "/" + string(manaMax) +
+    "##Strength: " + string(strength) +
+    "#Agility: " + string(agility) +
+    "#Intellect: " + string(intellect);
+    
+//Draw frame
+var c = c_black;
+var offset = 5;
+var w = string_width(txt) + (offset * 2);
+var h = string_height(txt) + (offset * 2);
+var xx = room_width - w - offset;
+var yy = room_height - h - offset;
+draw_set_alpha(0.4);
+    draw_rectangle_colour(xx, yy, xx + w, yy + h, c, c, c, c, false);
+draw_set_alpha(1);
+
+//Draw text
+draw_text(xx + offset, yy + offset, txt);
 </string>
           </argument>
         </arguments>
