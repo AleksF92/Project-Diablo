@@ -27,6 +27,8 @@
     <script>scripts\randomRound.gml</script>
     <script>scripts\getBarPixels.gml</script>
     <script>scripts\player_in_triangle.gml</script>
+    <script>scripts\string_explode.gml</script>
+    <script>scripts\map_check.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_NPC</font>
@@ -47,6 +49,8 @@
   </objects>
   <rooms name="rooms">
     <room>rooms\rom_World</room>
+    <room>rooms\rom_Forest1</room>
+    <room>rooms\rom_Forest2</room>
   </rooms>
   <help>
     <rtf>help.rtf</rtf>

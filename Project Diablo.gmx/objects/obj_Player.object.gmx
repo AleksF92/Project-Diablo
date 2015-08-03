@@ -75,6 +75,12 @@ costFractal = 10;
 
 //Movement variables
 walkSpeed = 4;
+
+//Map variables
+mapX = 0;
+mapY = 0;
+mapList = ds_list_create();
+ds_list_add(mapList, "0,0,0,-1,-1,1792,128,-1,-1,896,1024");
 </string>
           </argument>
         </arguments>
@@ -181,24 +187,24 @@ if (floor(hp) &lt; hpMax) {
 //Movement
 var r = sprite_width / 2;
 if (keyboard_check(ord("A"))) {
-    //if (!collision_circle(x - walkSpeed, y, r, obj_NPC, true, true)) {
+    if (!collision_line(x - r, y, x - r - walkSpeed, y, obj_Terrain, false, true)) {
         x -= walkSpeed;
-    //}
+    }
 }
 if (keyboard_check(ord("D"))) {
-    //if (!collision_circle(x + walkSpeed, y, r, obj_NPC, true, true)) {
+    if (!collision_line(x + r, y, x + r + walkSpeed, y, obj_Terrain, false, true)) {
         x += walkSpeed;
-    //}
+    }
 }
 if (keyboard_check(ord("W"))) {
-    //if (!collision_circle(x, y - walkSpeed, r, obj_NPC, true, true)) {
+    if (!collision_line(x, y - r, x, y - r - walkSpeed, obj_Terrain, false, true)) {
         y -= walkSpeed;
-    //}
+    }
 }
 if (keyboard_check(ord("S"))) {
-    //if (!collision_circle(x, y + walkSpeed, r, obj_NPC, true, true)) {
+    if (!collision_line(x, y + r, x, y + r + walkSpeed, obj_Terrain, false, true)) {
         y += walkSpeed;
-    //}
+    }
 }
 
 //Interface &amp; hotkeys
@@ -245,6 +251,7 @@ if (mouse_check_button(mb_left)) {
             <kind>1</kind>
             <string>///Look at mouse
 image_angle = point_direction(x, y, mouse_x, mouse_y);
+direction = image_angle;
 </string>
           </argument>
         </arguments>
@@ -275,7 +282,7 @@ if (!dead &amp;&amp; hp &lt;= 0) {
         </arguments>
       </action>
     </event>
-    <event eventtype="4" ename="obj_Terrain">
+    <event eventtype="4" ename="obj_NPC">
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -299,7 +306,7 @@ move_bounce_all(false);
         </arguments>
       </action>
     </event>
-    <event eventtype="4" ename="obj_NPC">
+    <event eventtype="7" enumb="4">
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -316,8 +323,149 @@ move_bounce_all(false);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Prevent movement
-move_bounce_all(false);
+            <string>///Remove walls
+for (var i = 0; i &lt; ds_list_size(mapList); i++) {
+    var strList = string_explode(mapList[| i], ",");
+    var mx = real(strList[| 0]);
+    var my = real(strList[| 1]);
+    var mRom = real(strList[| 2]);
+    
+    if (mx == mapX &amp;&amp; my == mapY) {
+        for (var j = 4; j &lt; ds_list_size(strList); j += 2) {
+            var tx = real(strList[| j - 1]);
+            var ty = real(strList[| j]);
+            if (tx != -1 &amp;&amp; ty != -1) {
+                var t = instance_nearest(tx, ty, obj_Terrain);
+                with (t) {instance_destroy();}
+            }
+        }
+    }
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="7" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Go to next room
+
+//Find direction
+if (x &lt; 0) {mapX -= 1;}
+if (x &gt; room_width) {mapX += 1;}
+if (y &lt; 0) {mapY -= 1;}
+if (y &gt; room_height) {mapY += 1;}
+
+//Check if next room exists
+var foundMap = -1;
+var strList = 0;
+
+for (var i = 0; i &lt; ds_list_size(mapList); i++) {
+    strList = string_explode(mapList[| i], ",");
+    var mx = real(strList[| 0]);
+    var my = real(strList[| 1]);
+    var mRom = real(strList[| 2]);
+    
+    if (mx == mapX &amp;&amp; my == mapY) {
+        foundMap = mRom;
+        break;
+    }
+}
+
+if (foundMap &gt; -1) {
+    //Load room
+    switch (foundMap) {
+        case 0: {room = rom_World; break;}
+        case 1: {room = rom_Forest1; break;}
+        case 2: {room = rom_Forest2; break;}
+    }
+    
+    //Place at entrance
+    if (x &lt; 0) {x = real(strList[| 5]); y = real(strList[| 6]);}
+    if (x &gt; room_width) {x = real(strList[| 3]); y = real(strList[| 4]);}
+    if (y &lt; 0) {x = real(strList[| 9]); y = real(strList[| 10]);}
+    if (y &gt; room_height) {x = real(strList[| 7]); y = real(strList[| 8]);}
+    x += 64;
+    y += 64;
+    if (y &gt; room_height) {y -= 64;}
+}
+else {
+    //Select random room
+    var roomNum = randomRound(1, 2);
+    switch (roomNum) {
+        case 0: {room = rom_World; break;}
+        case 1: {room = rom_Forest1; break;}
+        case 2: {room = rom_Forest2; break;}
+    }
+    
+    //Remove random walls
+    var wStr = string(mapX) + "," + string(mapY) + "," + string(roomNum);
+    var ws = 128;
+    var x1 = -1;
+    var y1 = -1;
+    var wLeft = map_check(mapList, mapX, mapY, "left");
+    if ((choose(0, 1, 1) &amp;&amp; wLeft == 0) || (x &gt; room_width) || wLeft == 1) {
+        //Left wall
+        x1 = 0;
+        y1 = ws * randomRound(1, 7);
+        if (x &gt; room_width) {x = x1; y = y1;}
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wRight = map_check(mapList, mapX, mapY, "right");
+    if ((choose(0, 1, 1) &amp;&amp; wRight == 0) || (x &lt; 0) || wRight == 1) {
+        //Right wall
+        x1 = ws * 14;
+        y1 = ws * randomRound(1, 7);
+        if (x &lt; 0) {x = x1; y = y1;}
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wUp = map_check(mapList, mapX, mapY, "up");
+    if ((choose(0, 1, 1) &amp;&amp; wUp == 0) || (y &gt; room_height) || wUp == 1) {
+        //Top wall
+        x1 = ws * randomRound(1, 13);
+        y1 = 0;
+        if (y &gt; room_height) {x = x1; y = y1;}
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wDown = map_check(mapList, mapX, mapY, "down");
+    if ((choose(0, 1, 1) &amp;&amp; wDown == 0) || (y &lt; 0) || wDown == 1) {
+        //Bottom wall
+        x1 = ws * randomRound(1, 13);
+        y1 = ws * 8;
+        if (y &lt; 0) {x = x1; y = y1;}
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    x += 64;
+    y += 64;
+    if (y &gt; room_height) {y -= 64;}
+    
+    //Store map information
+    ds_list_add(mapList, wStr);
+}
 </string>
           </argument>
         </arguments>
@@ -344,9 +492,11 @@ move_bounce_all(false);
 var txt = "CHARACTER INFORMATION#" +
     "#Health: " + string(floor(hp)) + "/" + string(hpMax) +
     "#Mana: " + string(floor(mana)) + "/" + string(manaMax) +
+    "#Experience: " + string(xp) + "/" + string(xpRequired) +
     "##Strength: " + string(strength) +
     "#Agility: " + string(agility) +
-    "#Intellect: " + string(intellect);
+    "#Intellect: " + string(intellect) +
+    "##Map location: " + string(mapX) + ", " + string(mapY);
     
 //Draw frame
 var c = c_black;
@@ -357,6 +507,28 @@ var xx = room_width - w - offset;
 var yy = room_height - h - offset;
 draw_set_alpha(0.4);
     draw_rectangle_colour(xx, yy, xx + w, yy + h, c, c, c, c, false);
+    
+    //Draw hp bar
+    var bh = string_height(txt) / 11;
+    var bc = c_red;
+    var by = yy + (bh * 2) + 2;
+    if (hp &gt; 0) {
+        draw_rectangle_colour(xx, by, xx + getBarPixels(w, hp, hpMax), by + bh, bc, bc, bc, bc, false);
+    }
+    
+    //Draw mana bar
+    bc = c_blue;
+    by = yy + (bh * 3) + 2;
+    if (mana &gt; 0) {
+        draw_rectangle_colour(xx, by, xx + getBarPixels(w, mana, manaMax), by + bh, bc, bc, bc, bc, false);
+    }
+    
+    //Draw experience bar
+    bc = c_yellow;
+    by = yy + (bh * 4) + 2;
+    if (xp &gt; 0) {
+        draw_rectangle_colour(xx, by, xx + getBarPixels(w, xp, xpMax), by + bh, bc, bc, bc, bc, false);
+    }
 draw_set_alpha(1);
 
 //Draw text
