@@ -81,6 +81,46 @@ mapX = 0;
 mapY = 0;
 mapList = ds_list_create();
 ds_list_add(mapList, "0,0,0,-1,-1,1792,128,-1,-1,896,1024");
+spawnX = x;
+spawnY = y;
+
+//Interface variables
+showInventory = false;
+bagList = ds_list_create();
+//ds_list_add(bagList, "Apple/5");
+ds_list_add(bagList, "Leather Chest/1");
+
+//Quests
+quests = ds_map_create();
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="2" enumb="1">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Respawn
+x = spawnX;
+y = spawnY;
+hp = hpMax;
+mana = manaMax;
+dead = false;
+room_restart();
 </string>
           </argument>
         </arguments>
@@ -109,7 +149,45 @@ ds_list_add(mapList, "0,0,0,-1,-1,1792,128,-1,-1,896,1024");
         </arguments>
       </action>
     </event>
-    <event eventtype="3" enumb="1">
+    <event eventtype="3" enumb="2">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Regen health
+/*
+if (floor(hp) &lt; hpMax) {
+    hp += 0.1;
+    if (hp &gt; hpMax) {
+        hp = hpMax;
+    }
+}
+
+//Control max
+if (hp &gt; hpMax) {
+    hp = hpMax;
+}
+
+//Control min
+if (hp &lt; 0) {
+    hp = 0;
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -133,32 +211,15 @@ if (floor(mana) &lt; manaMax) {
         mana = manaMax;
     }
 }
-</string>
-          </argument>
-        </arguments>
-      </action>
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>///Regen health
-if (floor(hp) &lt; hpMax) {
-    hp += 0.1;
-    if (hp &gt; hpMax) {
-        hp = hpMax;
-    }
+
+//Control max
+if (mana &gt; manaMax) {
+    mana = manaMax;
+}
+
+//Control min
+if (mana &lt; 0) {
+    mana = 0;
 }
 </string>
           </argument>
@@ -184,48 +245,58 @@ if (floor(hp) &lt; hpMax) {
             <kind>1</kind>
             <string>///Input handling
 
-//Movement
-var r = sprite_width / 2;
-if (keyboard_check(ord("A"))) {
-    if (!collision_line(x - r, y, x - r - walkSpeed, y, obj_Terrain, false, true)) {
-        x -= walkSpeed;
-    }
-}
-if (keyboard_check(ord("D"))) {
-    if (!collision_line(x + r, y, x + r + walkSpeed, y, obj_Terrain, false, true)) {
-        x += walkSpeed;
-    }
-}
-if (keyboard_check(ord("W"))) {
-    if (!collision_line(x, y - r, x, y - r - walkSpeed, obj_Terrain, false, true)) {
-        y -= walkSpeed;
-    }
-}
-if (keyboard_check(ord("S"))) {
-    if (!collision_line(x, y + r, x, y + r + walkSpeed, obj_Terrain, false, true)) {
-        y += walkSpeed;
-    }
+//Global controls
+
+//Interface toggles
+if (keyboard_check_pressed(ord("B"))) {
+    showInventory = !showInventory;
 }
 
-//Interface &amp; hotkeys
+//Utility controls
 if (keyboard_check_pressed(vk_escape)) {
     game_end();
 }
 if (keyboard_check_pressed(ord("R"))) {
-    game_restart();
+    alarm[1] = 1;
 }
 
-if (mouse_check_button(mb_left)) {
-    //Check for cooldown
-    if (!alarm[0] &amp;&amp; mana &gt;= costFractal) {
-        alarm[0] = cdFractal;
-        mana -= costFractal;
-        
-        //Make fractal bullet
-        var b = instance_create(x, y, obj_Fractal);
-        b.image_angle = image_angle;
-        with (b) {
-            motion_set(image_angle, 12);
+if (!showInventory) {
+    //Movement controls
+    var r = sprite_width / 2;
+    if (keyboard_check(ord("A"))) {
+        if (!collision_line(x - r, y, x - r - walkSpeed, y, obj_Terrain, false, true)) {
+            x -= walkSpeed;
+        }
+    }
+    if (keyboard_check(ord("D"))) {
+        if (!collision_line(x + r, y, x + r + walkSpeed, y, obj_Terrain, false, true)) {
+            x += walkSpeed;
+        }
+    }
+    if (keyboard_check(ord("W"))) {
+        if (!collision_line(x, y - r, x, y - r - walkSpeed, obj_Terrain, false, true)) {
+            y -= walkSpeed;
+        }
+    }
+    if (keyboard_check(ord("S"))) {
+        if (!collision_line(x, y + r, x, y + r + walkSpeed, obj_Terrain, false, true)) {
+            y += walkSpeed;
+        }
+    }
+    
+    //Combat controls
+    if (mouse_check_button(mb_left)) {
+        //Check for cooldown
+        if (!alarm[0] &amp;&amp; mana &gt;= costFractal) {
+            alarm[0] = cdFractal;
+            mana -= costFractal;
+            
+            //Make fractal bullet
+            var b = instance_create(x, y, obj_Fractal);
+            b.image_angle = image_angle;
+            with (b) {
+                motion_set(image_angle, 12);
+            }
         }
     }
 }
@@ -275,7 +346,7 @@ direction = image_angle;
             <string>///Check for death
 if (!dead &amp;&amp; hp &lt;= 0) {
     dead = true;
-    game_restart();
+    alarm[1] = 1;
 }
 </string>
           </argument>
@@ -300,7 +371,9 @@ if (!dead &amp;&amp; hp &lt;= 0) {
           <argument>
             <kind>1</kind>
             <string>///Prevent movement
-move_bounce_all(false);
+if (!other.dead) {
+    move_bounce_all(false);
+}
 </string>
           </argument>
         </arguments>
@@ -403,6 +476,8 @@ if (foundMap &gt; -1) {
     x += 64;
     y += 64;
     if (y &gt; room_height) {y -= 64;}
+    spawnX = x;
+    spawnY = y;
 }
 else {
     //Select random room
@@ -462,6 +537,8 @@ else {
     x += 64;
     y += 64;
     if (y &gt; room_height) {y -= 64;}
+    spawnX = x;
+    spawnY = y;
     
     //Store map information
     ds_list_add(mapList, wStr);
@@ -533,6 +610,138 @@ draw_set_alpha(1);
 
 //Draw text
 draw_text(xx + offset, yy + offset, txt);
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw inventory
+if (showInventory) {
+    var IW = 64;
+    var IH = 128;
+    var cx = window_get_width() / 2;
+    var cy = window_get_height() / 2;
+    var bagW = 8;
+    var bagH = 3;
+    
+    //Draw frame
+    var iOffset = 5;
+    var fw = iOffset + (bagW * (IW + iOffset));
+    var fh = iOffset + (bagH * (IH + iOffset));
+    var fx = cx - (fw / 2);
+    var fy = cy - (fh / 2);
+    var c = c_black;
+    draw_set_alpha(0.4);
+        draw_rectangle_colour(fx, fy, fx + fw, fy + fh, c, c, c, c, false);
+    draw_set_alpha(1);
+    
+    //Draw items
+    for (var by = 0; by &lt; bagH; by++) {
+        for (var bx = 0; bx &lt; bagW; bx++) {
+            var itemData = 0;
+            var iColor = "";
+            var i = (by * bagW) + bx;
+            if (i &lt; ds_list_size(bagList)) {
+                itemData = string_explode(bagList[| i], "/");
+                var iName = itemData[| 0];
+                var iCount = real(itemData[| 1]);
+                
+                var itemInfo = item_info(iName);
+                var iMaxStack = itemInfo[| 0];
+                iColor = itemInfo[| 1];
+                var iDesc = itemInfo[| 2];
+            }
+            var ix = fx + iOffset + (bx * (IW + iOffset));
+            var iy = fy + iOffset + (by * (IH + iOffset));
+            
+            //Check mouse hover
+            if (itemData) {
+                if (mouse_x &gt;= ix &amp;&amp; mouse_x &lt;= ix + IW) {
+                    if (mouse_y &gt;= iy &amp;&amp; mouse_y &lt;= iy + IH) {
+                        //Check for click
+                        if (mouse_check_button_pressed(mb_right)) {
+                            var use = item_use(iName);
+                            if (use == "Consumed") {
+                                iCount--;
+                                if (!iCount) {
+                                    ds_list_delete(bagList, i);
+                                }
+                                else {
+                                    bagList[| i] = iName + "/" + string(iCount);
+                                }
+                            }
+                        }
+                    
+                        //Draw extra info
+                        c = c_black;
+                        var eiStr = iName + "##" + iDesc;
+                        var eiw = string_width(eiStr) + (iOffset * 2);
+                        var eih = string_height(eiStr) + (iOffset * 2);
+                        var eix = ix - eiw;
+                        var eiy = iy + (IH - eih);
+                        
+                        draw_set_alpha(0.6);
+                            draw_rectangle_colour(eix, eiy, eix + eiw, eiy + eih, c, c, c, c, false);
+                        draw_set_alpha(1);
+                        
+                        //draw_text_centered(eix + iOffset + (eiw / 2), eiy + iOffset + (eih / 2), eiStr);
+                        draw_text(eix + iOffset, eiy + iOffset, eiStr);
+                        
+                        //Set highlight color
+                        iColor = "Selected";
+                    }
+                }
+            }
+            
+            //Get item quality color
+            switch(iColor) {
+                case "Selected": {c = c_yellow; break;}
+                case "Normal": {c = c_white; break;}
+                case "Uncommon": {c = c_lime; break;}
+                case "Rare": {c = c_blue; break;}
+                case "Epic": {c = c_purple; break;}
+                case "Legendary": {c = c_orange; break;}
+                default: {c = c_black; break;}
+            }
+            
+            //Draw item frame
+            draw_set_alpha(0.4);
+                draw_rectangle_colour(ix, iy, ix + IW, iy + IH, c, c, c, c, false);
+            draw_set_alpha(1);
+            
+            //Draw item
+            if (itemData) {
+                var spr = item_image(iName);
+                draw_sprite(spr, 0, ix, iy);
+            }
+            
+            //Draw framing
+            draw_rectangle_colour(ix, iy, ix + IW, iy + IH, c, c, c, c, true);
+            
+            if (itemData) {
+                if (iCount &gt; 1) {
+                    //Draw item count
+                    draw_text_centered(ix + (IW / 2), iy + IH - 16, "x" + string(iCount));
+                }
+            }
+        }
+    }
+}
 </string>
           </argument>
         </arguments>

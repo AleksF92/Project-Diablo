@@ -36,6 +36,8 @@ speech = 0;
 speechList = ds_list_create();
 lettersReadPerSecond = 7;
 speechDuration = (room_speed / lettersReadPerSecond);
+events = ds_map_create();
+alarm[2] = 1;
 
 //Watching
 lookGoal = 0;
@@ -50,6 +52,51 @@ image_angle = randomRound(0, 360);
 hover = false;
 hit = false;
 nearby = false;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="2" enumb="2">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Set speeches
+alarm[0] = 0;
+
+switch (name) {
+    case "Valkyria": {
+        if (!obj_Player.quests[? "Valkyria's Welcome"]) {
+            ds_list_add(speechList, "Hello traveller, my name is Valkyria.");
+            ds_list_add(speechList, "I am going to teach you the basic controls.");
+            ds_list_add(speechList, "You can access your inventory by#clicking the [B] key.");
+            ds_list_add(speechList, "You can shoot projectiles using your#[Left Mouse] button.");
+            ds_list_add(speechList, "You may move around by using the keys [A][S][D][W].");
+            ds_list_add(speechList, "But before you go, be warned...#These woods are dangerous!");
+            ds_list_add(speechList, "There are camps of bandits and#they will not treat you kindly.");
+            ds_list_add(speechList, "Best of luck to you!#Here, have 5 Apples for your journey."); //7
+        }
+        else {
+            ds_list_clear(speechList);
+            ds_list_add(speechList, "I wish you good luck!");
+            //show_message("speechCount: " + string(ds_list_size(speechList)));
+        }
+        break;
+    }
+}
 </string>
           </argument>
         </arguments>
@@ -104,11 +151,45 @@ lookGoal = look * dir;
 if (ds_list_size(speechList) &gt; speech + 1) {
     //Go to next speech
     speech++;
+    
     alarm[0] = string_length(speechList[| speech]) * speechDuration;
 }
 else {
     //Reset speech
     speech = 0;
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Speech events
+switch(name) {
+    case "Valkyria": {
+        if (!obj_Player.quests[? "Valkyria's Welcome"] &amp;&amp; speech == 7) {
+            obj_Player.quests[? "Valkyria's Welcome"] = true;
+
+            //Complete event, give apples and new speech
+            ds_list_add(obj_Player.bagList, "Apple/5");
+            alarm[2] = alarm[0];
+        }
+        break;
+    }
 }
 </string>
           </argument>
@@ -146,6 +227,9 @@ if (!dead) {
             if (ds_list_size(speechList)) {
                 if (alarm[0]) {
                     alarm[0] = 1;
+                    if (alarm[2]) {
+                        alarm[2] = 1;
+                    }
                 }
                 else {
                     alarm[0] = string_length(speechList[| speech]) * speechDuration;
@@ -226,7 +310,7 @@ hover = true;
         </arguments>
       </action>
     </event>
-    <event eventtype="8" enumb="0">
+    <event eventtype="8" enumb="64">
       <action>
         <libid>1</libid>
         <id>603</id>
@@ -243,13 +327,7 @@ hover = true;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Draw character
-if (dead) {
-    draw_sprite_ext(sprite_index, image_index, x, y, 1, 1, image_angle, c_gray, 1);
-}
-else {
-    draw_self();
-}
+            <string>///Draw info box
 var txt = "";
 if (hover || hit || nearby) {
     txt = "[" + name + "]";
@@ -282,6 +360,35 @@ draw_set_alpha(1);
 
 //Draw text
 draw_text_centered(x, yOff, txt);
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="8" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw character
+if (dead) {
+    draw_sprite_ext(sprite_index, image_index, x, y, 1, 1, image_angle, c_gray, 1);
+}
+else {
+    draw_self();
+}
 </string>
           </argument>
         </arguments>

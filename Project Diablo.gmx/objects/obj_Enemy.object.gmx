@@ -137,6 +137,7 @@ hit = false;
             <string>///Check for death
 if (hp &lt;= 0 &amp;&amp; !dead) {
     dead = true;
+    depth = 1;
     path_end();
 }
 </string>
@@ -193,9 +194,23 @@ if (!dead) {
     if (target) {
         targetDist = distance_to_object(target);
         if (targetDist &lt;= floor(aggroRange * 0.8)) {
-            //Target OK, refresh
-            alarm[3] = 0;
-            target.hp -= 0.5;
+            var x2 = x + lengthdir_x(aggroRange, image_angle + (fov / 2));
+            var y2 = y + lengthdir_y(aggroRange, image_angle + (fov / 2));
+            var x3 = x + lengthdir_x(aggroRange, image_angle - (fov / 2));
+            var y3 = y + lengthdir_y(aggroRange, image_angle - (fov / 2));
+            var t = player_in_triangle(x, y, x2, y2, x3, y3);
+            
+            if (t) {
+                //Target OK, refresh
+                alarm[3] = 0;
+                path_end();
+                if (!target.dead) {
+                    target.hp -= 0.1;
+                    if (target.hp &lt; 0) {
+                        target.hp = 0;
+                    }
+                }
+            }
         }
         else {
             //Target lost, set timer once
@@ -256,7 +271,7 @@ if (!dead) {
         </arguments>
       </action>
     </event>
-    <event eventtype="8" enumb="0">
+    <event eventtype="8" enumb="64">
       <action>
         <libid>1</libid>
         <id>603</id>
