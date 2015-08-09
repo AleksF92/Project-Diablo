@@ -80,18 +80,20 @@ walkSpeed = 4;
 mapX = 0;
 mapY = 0;
 mapList = ds_list_create();
-ds_list_add(mapList, "0,0,0,-1,-1,1792,128,-1,-1,896,1024");
+loadMap = 0;
+pDir = "";
 spawnX = x;
 spawnY = y;
 
 //Interface variables
 showInventory = false;
 bagList = ds_list_create();
-//ds_list_add(bagList, "Apple/5");
 ds_list_add(bagList, "Leather Chest/1");
 
 //Quests
 quests = ds_map_create();
+//ds_map_add(quests, "Valkyria's Welcome", false);
+//quests[? "Valkyria's Welcome"] = false;
 </string>
           </argument>
         </arguments>
@@ -174,6 +176,7 @@ if (floor(hp) &lt; hpMax) {
         hp = hpMax;
     }
 }
+*/
 
 //Control max
 if (hp &gt; hpMax) {
@@ -260,27 +263,32 @@ if (keyboard_check_pressed(ord("R"))) {
     alarm[1] = 1;
 }
 
-if (!showInventory) {
+//if (!showInventory) {
     //Movement controls
+    var moveSpeed = walkSpeed;
+    if (keyboard_check(vk_shift)) {
+        moveSpeed *= 3; 
+    }
+    
     var r = sprite_width / 2;
     if (keyboard_check(ord("A"))) {
-        if (!collision_line(x - r, y, x - r - walkSpeed, y, obj_Terrain, false, true)) {
-            x -= walkSpeed;
+        if (!collision_line(x - r, y, x - r - moveSpeed, y, obj_Terrain, false, true)) {
+            x -= moveSpeed;
         }
     }
     if (keyboard_check(ord("D"))) {
-        if (!collision_line(x + r, y, x + r + walkSpeed, y, obj_Terrain, false, true)) {
-            x += walkSpeed;
+        if (!collision_line(x + r, y, x + r + moveSpeed, y, obj_Terrain, false, true)) {
+            x += moveSpeed;
         }
     }
     if (keyboard_check(ord("W"))) {
-        if (!collision_line(x, y - r, x, y - r - walkSpeed, obj_Terrain, false, true)) {
-            y -= walkSpeed;
+        if (!collision_line(x, y - r, x, y - r - moveSpeed, obj_Terrain, false, true)) {
+            y -= moveSpeed;
         }
     }
     if (keyboard_check(ord("S"))) {
-        if (!collision_line(x, y + r, x, y + r + walkSpeed, obj_Terrain, false, true)) {
-            y += walkSpeed;
+        if (!collision_line(x, y + r, x, y + r + moveSpeed, obj_Terrain, false, true)) {
+            y += moveSpeed;
         }
     }
     
@@ -299,7 +307,7 @@ if (!showInventory) {
             }
         }
     }
-}
+//}
 </string>
           </argument>
         </arguments>
@@ -396,24 +404,166 @@ if (!other.dead) {
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Remove walls
-for (var i = 0; i &lt; ds_list_size(mapList); i++) {
-    var strList = string_explode(mapList[| i], ",");
-    var mx = real(strList[| 0]);
-    var my = real(strList[| 1]);
-    var mRom = real(strList[| 2]);
+            <string>///Load or generate room
+
+//Check if map is generated
+if (loadMap) {
+    //Load map
+    var mx = real(loadMap[| 0]);
+    var my = real(loadMap[| 1]);
+    var mRom = real(loadMap[| 2]);
+    var tx = real(loadMap[| 3]);
+    var ty = real(loadMap[| 4]);
+    var lx = real(loadMap[| 5]);
+    var ly = real(loadMap[| 6]);
+    var bx = real(loadMap[| 7]);
+    var by = real(loadMap[| 8]);
+    var rx = real(loadMap[| 9]);
+    var ry = real(loadMap[| 10]);
     
-    if (mx == mapX &amp;&amp; my == mapY) {
-        for (var j = 4; j &lt; ds_list_size(strList); j += 2) {
-            var tx = real(strList[| j - 1]);
-            var ty = real(strList[| j]);
-            if (tx != -1 &amp;&amp; ty != -1) {
-                var t = instance_nearest(tx, ty, obj_Terrain);
-                with (t) {instance_destroy();}
-            }
+    if (tx &gt; -1) {
+        with (instance_nearest(tx, ty, obj_Path_Entry)) {
+            instance_destroy();
         }
     }
+    if (lx &gt; -1) {
+        with (instance_nearest(lx, ly, obj_Path_Entry)) {
+            instance_destroy();
+        }
+    }
+    if (bx &gt; -1) {
+        with (instance_nearest(bx, by, obj_Path_Entry)) {
+            instance_destroy();
+        }
+    }
+    if (rx &gt; -1) {
+        with (instance_nearest(rx, ry, obj_Path_Entry)) {
+            instance_destroy();
+        }
+    }
+    
+    //Place player at entrance
+    if (pDir == "up") {x = real(loadMap[| 7]); y = real(loadMap[| 8]);} //Walking up
+    if (pDir == "left") {x = real(loadMap[| 9]); y = real(loadMap[| 10]);} //Walking left
+    if (pDir == "down") {x = real(loadMap[| 3]); y = real(loadMap[| 4]);} //Walking down
+    if (pDir == "right") {x = real(loadMap[| 5]); y = real(loadMap[| 6]);} //Walking right
 }
+else {
+    //Generate map
+    var wallsTop = ds_list_create();
+    var wallsLeft = ds_list_create();
+    var wallsBottom = ds_list_create();
+    var wallsRight = ds_list_create();
+    
+    var wallSize = 128;
+    var wStr = string(mapX) + "," + string(mapY) + "," + string(room_to_number(room));
+    
+    //Sort all walls
+    for (var i = 0; i &lt; instance_number(obj_Path_Entry); i++) {
+        var wall = instance_find(obj_Path_Entry, i);
+        
+        if (wall.y == 0) {ds_list_add(wallsTop, wall);} //Wall aligned top
+        if (wall.x == 0) {ds_list_add(wallsLeft, wall);} //Wall aligned left
+        if (wall.y == room_height - wallSize) {ds_list_add(wallsBottom, wall);} //Wall aligned bottom
+        if (wall.x == room_width - wallSize) {ds_list_add(wallsRight, wall);} //Wall aligned right
+    }
+    
+    //Remove walls listed (1 random)
+    var x1 = -1;
+    var y1 = -1;
+    var wTop = map_check(mapList, mapX, mapY, "up");
+    if (pDir == "down" || wTop == 1 || (wTop == 0 &amp;&amp; choose(0, 1, 1))) {
+        //Destroy top wall
+        var wallNum = randomRound(0, ds_list_size(wallsTop) - 1);
+        var wall = wallsTop[| wallNum];
+        x1 = wall.x;
+        y1 = wall.y;
+        if (pDir == "down") {
+            x = x1;
+            y = y1;
+        }
+        with (wall) {
+            instance_destroy();
+        }
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wLeft = map_check(mapList, mapX, mapY, "left");
+    if (pDir == "right" || wLeft == 1 || (wLeft == 0 &amp;&amp; choose(0, 1, 1))) {
+        //Destroy left wall
+        var wallNum = randomRound(0, ds_list_size(wallsLeft) - 1);
+        var wall = wallsLeft[| wallNum];
+        x1 = wall.x;
+        y1 = wall.y;
+        if (pDir == "right") {
+            x = x1;
+            y = y1;
+        }
+        with (wall) {
+            instance_destroy();
+        }
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wBottom = map_check(mapList, mapX, mapY, "down");
+    if (pDir == "up" || wBottom == 1 || (wBottom == 0 &amp;&amp; choose(0, 1, 1))) {
+        //Destroy bottom wall
+        var wallNum = randomRound(0, ds_list_size(wallsBottom) - 1);
+        var wall = wallsBottom[| wallNum];
+        x1 = wall.x;
+        y1 = wall.y;
+        if (pDir == "up") {
+            x = x1;
+            y = y1;
+        }
+        with (wall) {
+            instance_destroy();
+        }
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    var wRight = map_check(mapList, mapX, mapY, "right");
+    if (pDir == "left" || wRight == 1 || (wRight == 0 &amp;&amp; choose(0, 1, 1))) {
+        //Destroy right wall
+        var wallNum = randomRound(0, ds_list_size(wallsRight) - 1);
+        var wall = wallsRight[| wallNum];
+        x1 = wall.x;
+        y1 = wall.y;
+        if (pDir == "left") {
+            x = x1;
+            y = y1;
+        }
+        with (wall) {
+            instance_destroy();
+        }
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    //Set player spawn
+    x += 64;
+    y += 64;
+    spawnX = x;
+    spawnY = y;
+    
+    //Store data
+    loadMap = string_explode(wStr, ",");
+    ds_list_add(mapList, wStr);
+    
+    //Clean lists
+    ds_list_destroy(wallsTop);
+    ds_list_destroy(wallsLeft);
+    ds_list_destroy(wallsBottom);
+    ds_list_destroy(wallsRight);
+}
+
+//Easy generation view
+//view_enabled = false;
 </string>
           </argument>
         </arguments>
@@ -438,110 +588,36 @@ for (var i = 0; i &lt; ds_list_size(mapList); i++) {
             <kind>1</kind>
             <string>///Go to next room
 
-//Find direction
-if (x &lt; 0) {mapX -= 1;}
-if (x &gt; room_width) {mapX += 1;}
-if (y &lt; 0) {mapY -= 1;}
-if (y &gt; room_height) {mapY += 1;}
+//Apply direction
+if (y &lt; 0) {mapY -= 1; pDir = "up"}
+if (x &lt; 0) {mapX -= 1; pDir = "left"}
+if (y &gt; room_height) {mapY += 1; pDir = "down"}
+if (x &gt; room_width) {mapX += 1; pDir = "right"}
 
 //Check if next room exists
 var foundMap = -1;
-var strList = 0;
+loadMap = 0;
 
 for (var i = 0; i &lt; ds_list_size(mapList); i++) {
-    strList = string_explode(mapList[| i], ",");
+    var strList = string_explode(mapList[| i], ",");
     var mx = real(strList[| 0]);
     var my = real(strList[| 1]);
     var mRom = real(strList[| 2]);
     
     if (mx == mapX &amp;&amp; my == mapY) {
         foundMap = mRom;
+        loadMap = strList;
         break;
     }
 }
 
 if (foundMap &gt; -1) {
     //Load room
-    switch (foundMap) {
-        case 0: {room = rom_World; break;}
-        case 1: {room = rom_Forest1; break;}
-        case 2: {room = rom_Forest2; break;}
-    }
-    
-    //Place at entrance
-    if (x &lt; 0) {x = real(strList[| 5]); y = real(strList[| 6]);}
-    if (x &gt; room_width) {x = real(strList[| 3]); y = real(strList[| 4]);}
-    if (y &lt; 0) {x = real(strList[| 9]); y = real(strList[| 10]);}
-    if (y &gt; room_height) {x = real(strList[| 7]); y = real(strList[| 8]);}
-    x += 64;
-    y += 64;
-    if (y &gt; room_height) {y -= 64;}
-    spawnX = x;
-    spawnY = y;
+    room = number_to_room(foundMap);
 }
 else {
     //Select random room
-    var roomNum = randomRound(1, 2);
-    switch (roomNum) {
-        case 0: {room = rom_World; break;}
-        case 1: {room = rom_Forest1; break;}
-        case 2: {room = rom_Forest2; break;}
-    }
-    
-    //Remove random walls
-    var wStr = string(mapX) + "," + string(mapY) + "," + string(roomNum);
-    var ws = 128;
-    var x1 = -1;
-    var y1 = -1;
-    var wLeft = map_check(mapList, mapX, mapY, "left");
-    if ((choose(0, 1, 1) &amp;&amp; wLeft == 0) || (x &gt; room_width) || wLeft == 1) {
-        //Left wall
-        x1 = 0;
-        y1 = ws * randomRound(1, 7);
-        if (x &gt; room_width) {x = x1; y = y1;}
-    }
-    wStr += "," + string(x1) + "," + string(y1);
-    
-    x1 = -1;
-    y1 = -1;
-    var wRight = map_check(mapList, mapX, mapY, "right");
-    if ((choose(0, 1, 1) &amp;&amp; wRight == 0) || (x &lt; 0) || wRight == 1) {
-        //Right wall
-        x1 = ws * 14;
-        y1 = ws * randomRound(1, 7);
-        if (x &lt; 0) {x = x1; y = y1;}
-    }
-    wStr += "," + string(x1) + "," + string(y1);
-    
-    x1 = -1;
-    y1 = -1;
-    var wUp = map_check(mapList, mapX, mapY, "up");
-    if ((choose(0, 1, 1) &amp;&amp; wUp == 0) || (y &gt; room_height) || wUp == 1) {
-        //Top wall
-        x1 = ws * randomRound(1, 13);
-        y1 = 0;
-        if (y &gt; room_height) {x = x1; y = y1;}
-    }
-    wStr += "," + string(x1) + "," + string(y1);
-    
-    x1 = -1;
-    y1 = -1;
-    var wDown = map_check(mapList, mapX, mapY, "down");
-    if ((choose(0, 1, 1) &amp;&amp; wDown == 0) || (y &lt; 0) || wDown == 1) {
-        //Bottom wall
-        x1 = ws * randomRound(1, 13);
-        y1 = ws * 8;
-        if (y &lt; 0) {x = x1; y = y1;}
-    }
-    wStr += "," + string(x1) + "," + string(y1);
-    x += 64;
-    y += 64;
-    if (y &gt; room_height) {y -= 64;}
-    spawnX = x;
-    spawnY = y;
-    
-    //Store map information
-    ds_list_add(mapList, wStr);
+    room = number_to_room(randomRound(1, 3));
 }
 </string>
           </argument>
@@ -580,8 +656,8 @@ var c = c_black;
 var offset = 5;
 var w = string_width(txt) + (offset * 2);
 var h = string_height(txt) + (offset * 2);
-var xx = room_width - w - offset;
-var yy = room_height - h - offset;
+var xx = window_get_width() - w - offset;
+var yy = window_get_height() - h - offset;
 draw_set_alpha(0.4);
     draw_rectangle_colour(xx, yy, xx + w, yy + h, c, c, c, c, false);
     
@@ -742,6 +818,28 @@ if (showInventory) {
         }
     }
 }
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw FPS
+draw_text(5, 5, "FPS: " + string(fps));
 </string>
           </argument>
         </arguments>

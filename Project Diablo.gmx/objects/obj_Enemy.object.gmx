@@ -33,6 +33,7 @@ event_inherited();
 //Overwrite
 type = "Enemy";
 name = "Unnamed Enemy";
+alarm[2] = 0;
 
 //Combat variables
 var pl = obj_Player.level;

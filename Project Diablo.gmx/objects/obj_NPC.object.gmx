@@ -31,13 +31,12 @@ type = "NPC";
 dead = false;
 
 //Name &amp; speech
-name = "Unnamed NPC";
+cName = "Unnamed NPC";
 speech = 0;
 speechList = ds_list_create();
 lettersReadPerSecond = 7;
 speechDuration = (room_speed / lettersReadPerSecond);
 events = ds_map_create();
-alarm[2] = 1;
 
 //Watching
 lookGoal = 0;
@@ -77,9 +76,11 @@ nearby = false;
             <string>///Set speeches
 alarm[0] = 0;
 
-switch (name) {
+var t = instance_nearest(x, y, obj_Player);
+switch (cName) {
     case "Valkyria": {
-        if (!obj_Player.quests[? "Valkyria's Welcome"]) {
+        //show_message("Player: " + string(player));
+        if (!t.quests[? "Valkyria's Welcome"]) {
             ds_list_add(speechList, "Hello traveller, my name is Valkyria.");
             ds_list_add(speechList, "I am going to teach you the basic controls.");
             ds_list_add(speechList, "You can access your inventory by#clicking the [B] key.");
@@ -179,7 +180,7 @@ else {
           <argument>
             <kind>1</kind>
             <string>///Speech events
-switch(name) {
+switch(cName) {
     case "Valkyria": {
         if (!obj_Player.quests[? "Valkyria's Welcome"] &amp;&amp; speech == 7) {
             obj_Player.quests[? "Valkyria's Welcome"] = true;
@@ -241,6 +242,9 @@ if (!dead) {
         //Reset speech if out of range
         if (alarm[0]) {
             alarm[0] = 0;
+            if (alarm[2]) {
+                alarm[2] = 1;
+            }
             speech = 0;
         }
         
@@ -330,7 +334,7 @@ hover = true;
             <string>///Draw info box
 var txt = "";
 if (hover || hit || nearby) {
-    txt = "[" + name + "]";
+    txt = "[" + cName + "]";
     if (type == "Enemy") {
         txt += "#(Lvl: " + string(level) + ")";
     }
@@ -344,7 +348,7 @@ if (hover || hit || nearby) {
     }
 }
 if (alarm[0]) {
-    txt = "[" + name + "]#" + speechList[| speech];
+    txt = "[" + cName + "]#" + speechList[| speech];
 }
 
 //Draw rectangle
@@ -353,13 +357,13 @@ if (dead) {c = c_red;}
 
 cx = string_width(txt) / 2;
 cy = string_height(txt) / 2;
-yOff = y - 64;
+yOff = y - view_yview[0] - 64;
 draw_set_alpha(0.4);
-    draw_rectangle_colour(x - cx, yOff - cy, x + cx, yOff + cy, c, c, c, c, false);
+    draw_rectangle_colour(x - view_xview[0] - cx, yOff - cy, x - view_xview[0] + cx, yOff + cy, c, c, c, c, false);
 draw_set_alpha(1);
 
 //Draw text
-draw_text_centered(x, yOff, txt);
+draw_text_centered(x - view_xview[0], yOff, txt);
 </string>
           </argument>
         </arguments>
