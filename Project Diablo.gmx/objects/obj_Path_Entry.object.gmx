@@ -5,7 +5,7 @@
   <visible>-1</visible>
   <depth>1</depth>
   <persistent>0</persistent>
-  <parentName>obj_Terrain</parentName>
+  <parentName>obj_Tree</parentName>
   <maskName>&lt;undefined&gt;</maskName>
   <events>
     <event eventtype="0" enumb="0">
@@ -25,18 +25,9 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>///Select color tone
+            <string>///Change visual to parent
 event_inherited();
-
-sprite_index = spr_Tree;
-
-var idNum = cos(sin(id) * id) * 2;
-idNum = round(max(idNum, -idNum));
-switch (idNum) {
-    case 0: {image_blend = c_white; break;}
-    case 1: {image_blend = c_lime; break;}
-    case 2: {image_blend = c_green; break;}
-}
+//sprite_index = spr_Tree;
 </string>
           </argument>
         </arguments>

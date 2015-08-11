@@ -13,8 +13,8 @@
     </sprites>
     <sprites name="Map">
       <sprite>sprites\spr_Tree</sprite>
+      <sprite>sprites\spr_Cactus</sprite>
       <sprite>sprites\spr_Removable_Path</sprite>
-      <sprite>sprites\spr_Grass</sprite>
     </sprites>
     <sprites name="Projectiles">
       <sprite>sprites\spr_Fractal</sprite>
@@ -25,8 +25,8 @@
     </sprites>
   </sprites>
   <backgrounds name="background">
-    <background>background\tiles_Plains</background>
     <background>background\bg_Grass</background>
+    <background>background\bg_Sand</background>
   </backgrounds>
   <paths name="paths"/>
   <scripts name="scripts">
@@ -40,6 +40,7 @@
     <script>scripts\item_use.gml</script>
     <script>scripts\item_image.gml</script>
     <script>scripts\number_to_room.gml</script>
+    <script>scripts\number_to_bg.gml</script>
     <script>scripts\room_to_number.gml</script>
   </scripts>
   <fonts name="fonts">
@@ -61,8 +62,8 @@
     </objects>
   </objects>
   <rooms name="rooms">
-    <room>rooms\rom_Large</room>
     <room>rooms\rom_World</room>
+    <room>rooms\rom_Large</room>
     <room>rooms\rom_Forest1</room>
     <room>rooms\rom_Forest2</room>
   </rooms>

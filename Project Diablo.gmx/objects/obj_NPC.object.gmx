@@ -31,12 +31,13 @@ type = "NPC";
 dead = false;
 
 //Name &amp; speech
-cName = "Unnamed NPC";
+name = "Unnamed NPC";
 speech = 0;
 speechList = ds_list_create();
 lettersReadPerSecond = 7;
 speechDuration = (room_speed / lettersReadPerSecond);
 events = ds_map_create();
+alarm[2] = 1;
 
 //Watching
 lookGoal = 0;
@@ -77,7 +78,7 @@ nearby = false;
 alarm[0] = 0;
 
 var t = instance_nearest(x, y, obj_Player);
-switch (cName) {
+switch (name) {
     case "Valkyria": {
         //show_message("Player: " + string(player));
         if (!t.quests[? "Valkyria's Welcome"]) {
@@ -334,7 +335,7 @@ hover = true;
             <string>///Draw info box
 var txt = "";
 if (hover || hit || nearby) {
-    txt = "[" + cName + "]";
+    txt = "[" + name + "]";
     if (type == "Enemy") {
         txt += "#(Lvl: " + string(level) + ")";
     }
@@ -348,7 +349,7 @@ if (hover || hit || nearby) {
     }
 }
 if (alarm[0]) {
-    txt = "[" + cName + "]#" + speechList[| speech];
+    txt = "[" + name + "]#" + speechList[| speech];
 }
 
 //Draw rectangle

@@ -121,10 +121,10 @@
     <instance objName="obj_Path_Entry" x="896" y="1024" name="inst_49721777" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="1280" y="1024" name="inst_FD35FF56" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="1408" y="1024" name="inst_0D4A1358" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
-    <instance objName="obj_Enemy" x="320" y="736" name="inst_05AFEBD4" locked="0" code="name = &quot;Bandit Leader&quot;;&#xA;level = 5;&#xA;hpMax = 300;&#xA;hp = hpMax;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="320" y="736" name="inst_05AFEBD4" locked="0" code="name = &quot;Bandit Leader&quot;;&#xA;var p = instance_find(obj_Player, 0);&#xA;level = p.level + 4;&#xA;hpMax = 300;&#xA;hp = hpMax;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Enemy" x="416" y="928" name="inst_E245F4E2" locked="0" code="name = &quot;Bandit&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Enemy" x="224" y="928" name="inst_DFEEDF76" locked="0" code="name = &quot;Bandit&quot;;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
-    <instance objName="obj_NPC" x="448" y="320" name="inst_49FFF8F4" locked="0" code="cName = &quot;Valkyria&quot;;&#xA;alarm[2] = 10;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_NPC" x="448" y="320" name="inst_49FFF8F4" locked="0" code="name = &quot;Valkyria&quot;;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
   </instances>
   <tiles/>
   <PhysicsWorld>0</PhysicsWorld>

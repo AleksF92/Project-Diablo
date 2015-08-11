@@ -28,12 +28,46 @@
             <string>///Select color tone
 event_inherited();
 
+//Wait for room to load
+alarm[0] = 1;
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="2" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Set color tone &amp; sprite
 var idNum = cos(sin(id) * id) * 2;
 idNum = round(max(idNum, -idNum));
+
 switch (idNum) {
     case 0: {image_blend = c_white; break;}
     case 1: {image_blend = c_lime; break;}
     case 2: {image_blend = c_green; break;}
+}
+
+//Set texture to biome
+if (background_index[0] == bg_Sand) {
+    sprite_index = spr_Cactus;
+}
+else {
+    sprite_index = spr_Tree;
 }
 </string>
           </argument>

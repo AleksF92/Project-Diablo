@@ -113,6 +113,14 @@
     <instance objName="obj_Path_Entry" x="384" y="1024" name="inst_93100345" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="0" y="128" name="inst_76460CC1" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="0" y="256" name="inst_3387B7F9" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="1024" y="896" name="inst_1AEED1F5" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="1664" y="640" name="inst_3A4AD23B" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="1536" y="640" name="inst_3B17B310" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="1536" y="512" name="inst_3A121C15" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="512" y="128" name="inst_5C5D5C05" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Tree" x="512" y="256" name="inst_C28F6D7E" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="960" y="704" name="inst_C80E278C" locked="0" code="name = &quot;Bandit Stalker&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="1344" y="576" name="inst_ABA387BC" locked="0" code="name = &quot;Bandit Stalker&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
   </instances>
   <tiles/>
   <PhysicsWorld>0</PhysicsWorld>

@@ -57,7 +57,11 @@ randomize();
 //Experience variables
 level = 1;
 xp = 0;
-xpRequired = 100;
+xpRequired = ds_list_create();
+ds_list_add(xpRequired, 50);
+for (var i = 1; i &lt;= 100; i++) {
+    ds_list_add(xpRequired, xpRequired[| i - 1] + (15 * i));
+}
 
 //Power variables
 strength = 1;
@@ -84,6 +88,7 @@ loadMap = 0;
 pDir = "";
 spawnX = x;
 spawnY = y;
+spawnOffset = false;
 
 //Interface variables
 showInventory = false;
@@ -92,8 +97,6 @@ ds_list_add(bagList, "Leather Chest/1");
 
 //Quests
 quests = ds_map_create();
-//ds_map_add(quests, "Valkyria's Welcome", false);
-//quests[? "Valkyria's Welcome"] = false;
 </string>
           </argument>
         </arguments>
@@ -122,6 +125,8 @@ y = spawnY;
 hp = hpMax;
 mana = manaMax;
 dead = false;
+roomSpawn = false;
+
 room_restart();
 </string>
           </argument>
@@ -262,52 +267,61 @@ if (keyboard_check_pressed(vk_escape)) {
 if (keyboard_check_pressed(ord("R"))) {
     alarm[1] = 1;
 }
+if (keyboard_check_pressed(ord("T"))) {
+    game_restart();
+}
 
-//if (!showInventory) {
-    //Movement controls
-    var moveSpeed = walkSpeed;
-    if (keyboard_check(vk_shift)) {
-        moveSpeed *= 3; 
+//Movement controls
+var moveSpeed = walkSpeed;
+if (keyboard_check(vk_shift)) {
+    moveSpeed *= 3; 
+}
+
+var r = (sprite_width / 2);
+if (keyboard_check(ord("A"))) {
+    x -= moveSpeed;
+    var wall = collision_line(x - r, y - r, x - r, y + r, obj_Terrain, false, true);
+    if (wall) {
+        x = wall.x + wall.sprite_width + r;
     }
-    
-    var r = sprite_width / 2;
-    if (keyboard_check(ord("A"))) {
-        if (!collision_line(x - r, y, x - r - moveSpeed, y, obj_Terrain, false, true)) {
-            x -= moveSpeed;
+}
+if (keyboard_check(ord("D"))) {
+    x += moveSpeed;
+    var wall = collision_line(x + r, y - r, x + r, y + r, obj_Terrain, false, true);
+    if (wall) {
+        x = wall.x - r - 1;
+    }
+}
+if (keyboard_check(ord("W"))) {
+    y -= moveSpeed;
+    var wall = collision_line(x - r, y - r, x + r, y - r, obj_Terrain, false, true);
+    if (wall) {
+        y = wall.y + wall.sprite_height + r;
+    }
+}
+if (keyboard_check(ord("S"))) {
+    y += moveSpeed;
+    var wall = collision_line(x - r, y + r, x + r, y + r, obj_Terrain, false, true);
+    if (wall) {
+        y = wall.y - r - 1;
+    }
+}
+
+//Combat controls
+if (mouse_check_button(mb_left)) {
+    //Check for cooldown
+    if (!alarm[0] &amp;&amp; mana &gt;= costFractal) {
+        alarm[0] = cdFractal;
+        mana -= costFractal;
+        
+        //Make fractal bullet
+        var b = instance_create(x, y, obj_Fractal);
+        b.image_angle = image_angle;
+        with (b) {
+            motion_set(image_angle, 12);
         }
     }
-    if (keyboard_check(ord("D"))) {
-        if (!collision_line(x + r, y, x + r + moveSpeed, y, obj_Terrain, false, true)) {
-            x += moveSpeed;
-        }
-    }
-    if (keyboard_check(ord("W"))) {
-        if (!collision_line(x, y - r, x, y - r - moveSpeed, obj_Terrain, false, true)) {
-            y -= moveSpeed;
-        }
-    }
-    if (keyboard_check(ord("S"))) {
-        if (!collision_line(x, y + r, x, y + r + moveSpeed, obj_Terrain, false, true)) {
-            y += moveSpeed;
-        }
-    }
-    
-    //Combat controls
-    if (mouse_check_button(mb_left)) {
-        //Check for cooldown
-        if (!alarm[0] &amp;&amp; mana &gt;= costFractal) {
-            alarm[0] = cdFractal;
-            mana -= costFractal;
-            
-            //Make fractal bullet
-            var b = instance_create(x, y, obj_Fractal);
-            b.image_angle = image_angle;
-            with (b) {
-                motion_set(image_angle, 12);
-            }
-        }
-    }
-//}
+}
 </string>
           </argument>
         </arguments>
@@ -355,6 +369,36 @@ direction = image_angle;
 if (!dead &amp;&amp; hp &lt;= 0) {
     dead = true;
     alarm[1] = 1;
+}
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Check for levelup
+var xpReq = xpRequired[| level - 1];
+if (xp &gt;= xpReq) {
+    xp -= xpReq;
+    
+    level += 1;
+    strength += 1;
+    agility += 1;
+    intellect += 1;
 }
 </string>
           </argument>
@@ -420,6 +464,16 @@ if (loadMap) {
     var by = real(loadMap[| 8]);
     var rx = real(loadMap[| 9]);
     var ry = real(loadMap[| 10]);
+    var bgNum = real(loadMap[| 11]);
+    
+    /*
+    show_message(
+        "T: " + string(tx) + ", " + string(ty) +
+        "#L: " + string(lx) + ", " + string(ly) +
+        "#B: " + string(bx) + ", " + string(by) +
+        "#R: " + string(rx) + ", " + string(ry)
+    );
+    */
     
     if (tx &gt; -1) {
         with (instance_nearest(tx, ty, obj_Path_Entry)) {
@@ -447,6 +501,15 @@ if (loadMap) {
     if (pDir == "left") {x = real(loadMap[| 9]); y = real(loadMap[| 10]);} //Walking left
     if (pDir == "down") {x = real(loadMap[| 3]); y = real(loadMap[| 4]);} //Walking down
     if (pDir == "right") {x = real(loadMap[| 5]); y = real(loadMap[| 6]);} //Walking right
+    
+    //Add player offset
+    if (spawnOffset) {
+        x += 64;
+        y += 64;
+    }
+    
+    //Select random biome
+    background_index[0] = number_to_bg(bgNum);
 }
 else {
     //Generate map
@@ -471,85 +534,106 @@ else {
     //Remove walls listed (1 random)
     var x1 = -1;
     var y1 = -1;
-    var wTop = map_check(mapList, mapX, mapY, "up");
-    if (pDir == "down" || wTop == 1 || (wTop == 0 &amp;&amp; choose(0, 1, 1))) {
-        //Destroy top wall
-        var wallNum = randomRound(0, ds_list_size(wallsTop) - 1);
-        var wall = wallsTop[| wallNum];
-        x1 = wall.x;
-        y1 = wall.y;
-        if (pDir == "down") {
-            x = x1;
-            y = y1;
-        }
-        with (wall) {
-            instance_destroy();
-        }
-    }
-    wStr += "," + string(x1) + "," + string(y1);
-    
-    x1 = -1;
-    y1 = -1;
-    var wLeft = map_check(mapList, mapX, mapY, "left");
-    if (pDir == "right" || wLeft == 1 || (wLeft == 0 &amp;&amp; choose(0, 1, 1))) {
-        //Destroy left wall
-        var wallNum = randomRound(0, ds_list_size(wallsLeft) - 1);
-        var wall = wallsLeft[| wallNum];
-        x1 = wall.x;
-        y1 = wall.y;
-        if (pDir == "right") {
-            x = x1;
-            y = y1;
-        }
-        with (wall) {
-            instance_destroy();
+    if (ds_list_size(wallsTop)) {
+        var wTop = map_check(mapList, mapX, mapY, "up");
+        if (pDir == "down" || wTop == 1 || (wTop == 0 &amp;&amp; choose(0, 1, 1))) {
+            //Destroy top wall
+            var wallNum = randomRound(0, ds_list_size(wallsTop) - 1);
+            var wall = wallsTop[| wallNum];
+            x1 = wall.x;
+            y1 = wall.y;
+            if (pDir == "down") {
+                x = x1;
+                y = y1;
+            }
+        
+            with (wall) {
+                instance_destroy();
+            }
         }
     }
     wStr += "," + string(x1) + "," + string(y1);
     
     x1 = -1;
     y1 = -1;
-    var wBottom = map_check(mapList, mapX, mapY, "down");
-    if (pDir == "up" || wBottom == 1 || (wBottom == 0 &amp;&amp; choose(0, 1, 1))) {
-        //Destroy bottom wall
-        var wallNum = randomRound(0, ds_list_size(wallsBottom) - 1);
-        var wall = wallsBottom[| wallNum];
-        x1 = wall.x;
-        y1 = wall.y;
-        if (pDir == "up") {
-            x = x1;
-            y = y1;
-        }
-        with (wall) {
-            instance_destroy();
+    if (ds_list_size(wallsLeft)) {
+        var wLeft = map_check(mapList, mapX, mapY, "left");
+        if (pDir == "right" || wLeft == 1 || (wLeft == 0 &amp;&amp; choose(0, 1, 1))) {
+            //Destroy left wall
+            var wallNum = randomRound(0, ds_list_size(wallsLeft) - 1);
+            var wall = wallsLeft[| wallNum];
+            x1 = wall.x;
+            y1 = wall.y;
+            if (pDir == "right") {
+                x = x1;
+                y = y1;
+            }
+        
+            with (wall) {
+                instance_destroy();
+            }
         }
     }
     wStr += "," + string(x1) + "," + string(y1);
     
     x1 = -1;
     y1 = -1;
-    var wRight = map_check(mapList, mapX, mapY, "right");
-    if (pDir == "left" || wRight == 1 || (wRight == 0 &amp;&amp; choose(0, 1, 1))) {
-        //Destroy right wall
-        var wallNum = randomRound(0, ds_list_size(wallsRight) - 1);
-        var wall = wallsRight[| wallNum];
-        x1 = wall.x;
-        y1 = wall.y;
-        if (pDir == "left") {
-            x = x1;
-            y = y1;
-        }
-        with (wall) {
-            instance_destroy();
+    if (ds_list_size(wallsBottom)) {
+        var wBottom = map_check(mapList, mapX, mapY, "down");
+        if (pDir == "up" || wBottom == 1 || (wBottom == 0 &amp;&amp; choose(0, 1, 1))) {
+            //Destroy bottom wall
+            var wallNum = randomRound(0, ds_list_size(wallsBottom) - 1);
+            var wall = wallsBottom[| wallNum];
+            x1 = wall.x;
+            y1 = wall.y;
+            if (pDir == "up") {
+                x = x1;
+                y = y1;
+            }
+        
+            with (wall) {
+                instance_destroy();
+            }
         }
     }
     wStr += "," + string(x1) + "," + string(y1);
+    
+    x1 = -1;
+    y1 = -1;
+    if (ds_list_size(wallsRight)) {
+        var wRight = map_check(mapList, mapX, mapY, "right");
+        if (pDir == "left" || wRight == 1 || (wRight == 0 &amp;&amp; choose(0, 1, 1))) {
+            //Destroy right wall
+            var wallNum = randomRound(0, ds_list_size(wallsRight) - 1);
+            var wall = wallsRight[| wallNum];
+            x1 = wall.x;
+            y1 = wall.y;
+            if (pDir == "left") {
+                x = x1;
+                y = y1;
+            }
+        
+            with (wall) {
+                instance_destroy();
+            }
+        }
+    }
+    wStr += "," + string(x1) + "," + string(y1);
+    
+    //Add player offset
+    if (spawnOffset) {
+        x += 64;
+        y += 64;
+    }
     
     //Set player spawn
-    x += 64;
-    y += 64;
     spawnX = x;
     spawnY = y;
+    
+    //Select random biome
+    var bgNum = choose(0, 1);
+    background_index[0] = number_to_bg(bgNum);
+    wStr += "," + string(bgNum);
     
     //Store data
     loadMap = string_explode(wStr, ",");
@@ -617,8 +701,19 @@ if (foundMap &gt; -1) {
 }
 else {
     //Select random room
-    room = number_to_room(randomRound(1, 3));
+    var roomNum = 0;
+    switch (pDir) {
+        case "up": {roomNum = choose(1, 2); break;}
+        case "left": {roomNum = choose(1, 3); break;}
+        case "down": {roomNum = choose(2, 3); break;}
+        case "right": {roomNum = choose(3); break;}
+    }
+    
+    //Set room to the corresponding number
+    room = number_to_room(roomNum);
 }
+
+spawnOffset = true;
 </string>
           </argument>
         </arguments>
@@ -643,9 +738,10 @@ else {
             <kind>1</kind>
             <string>///Draw character info
 var txt = "CHARACTER INFORMATION#" +
-    "#Health: " + string(floor(hp)) + "/" + string(hpMax) +
+    "#Level: " + string(level) +
+    "##Health: " + string(floor(hp)) + "/" + string(hpMax) +
     "#Mana: " + string(floor(mana)) + "/" + string(manaMax) +
-    "#Experience: " + string(xp) + "/" + string(xpRequired) +
+    "#Experience: " + string(xp) + "/" + string(xpRequired[| level - 1]) +
     "##Strength: " + string(strength) +
     "#Agility: " + string(agility) +
     "#Intellect: " + string(intellect) +
@@ -662,25 +758,25 @@ draw_set_alpha(0.4);
     draw_rectangle_colour(xx, yy, xx + w, yy + h, c, c, c, c, false);
     
     //Draw hp bar
-    var bh = string_height(txt) / 11;
+    var bh = string_height(txt) / 13;
     var bc = c_red;
-    var by = yy + (bh * 2) + 2;
+    var by = yy + (bh * 4) + 2;
     if (hp &gt; 0) {
         draw_rectangle_colour(xx, by, xx + getBarPixels(w, hp, hpMax), by + bh, bc, bc, bc, bc, false);
     }
     
     //Draw mana bar
     bc = c_blue;
-    by = yy + (bh * 3) + 2;
+    by += bh;
     if (mana &gt; 0) {
         draw_rectangle_colour(xx, by, xx + getBarPixels(w, mana, manaMax), by + bh, bc, bc, bc, bc, false);
     }
     
     //Draw experience bar
     bc = c_yellow;
-    by = yy + (bh * 4) + 2;
+    by += bh;
     if (xp &gt; 0) {
-        draw_rectangle_colour(xx, by, xx + getBarPixels(w, xp, xpMax), by + bh, bc, bc, bc, bc, false);
+        draw_rectangle_colour(xx, by, xx + getBarPixels(w, xp, xpRequired[| level - 1]), by + bh, bc, bc, bc, bc, false);
     }
 draw_set_alpha(1);
 
@@ -747,8 +843,8 @@ if (showInventory) {
             
             //Check mouse hover
             if (itemData) {
-                if (mouse_x &gt;= ix &amp;&amp; mouse_x &lt;= ix + IW) {
-                    if (mouse_y &gt;= iy &amp;&amp; mouse_y &lt;= iy + IH) {
+                if (mouse_x - view_xview[0] &gt;= ix &amp;&amp; mouse_x - view_xview[0] &lt;= ix + IW) {
+                    if (mouse_y - view_yview[0] &gt;= iy &amp;&amp; mouse_y - view_yview[0] &lt;= iy + IH) {
                         //Check for click
                         if (mouse_check_button_pressed(mb_right)) {
                             var use = item_use(iName);

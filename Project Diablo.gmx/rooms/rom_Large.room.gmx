@@ -3,8 +3,8 @@
   <caption></caption>
   <width>5760</width>
   <height>3200</height>
-  <vsnap>128</vsnap>
-  <hsnap>128</hsnap>
+  <vsnap>64</vsnap>
+  <hsnap>64</hsnap>
   <isometric>0</isometric>
   <speed>60</speed>
   <persistent>0</persistent>
@@ -658,8 +658,16 @@
     <instance objName="obj_Path_Entry" x="0" y="1792" name="inst_3BA272EE" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="0" y="1920" name="inst_B9255FDD" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
     <instance objName="obj_Path_Entry" x="0" y="2048" name="inst_E424C9E1" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
-    <instance objName="obj_Player" x="2432" y="512" name="inst_57916C92" locked="0" code="" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
-    <instance objName="obj_NPC" x="2688" y="512" name="inst_612A07B0" locked="0" code="cName = &quot;Valkyria&quot;;&#xA;alarm[2] = 1;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="2752" y="2816" name="inst_FCD3D6AA" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="2368" y="2944" name="inst_75AE3420" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="2176" y="2560" name="inst_E6283BDA" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="3328" y="512" name="inst_72905D9B" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="3584" y="768" name="inst_352F1E7C" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="4224" y="1920" name="inst_B93B6B9B" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="4160" y="2240" name="inst_83B96ACA" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="5056" y="2560" name="inst_B7E3BCC8" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="5312" y="640" name="inst_70A0C7C8" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
+    <instance objName="obj_Enemy" x="5184" y="448" name="inst_377B609D" locked="0" code="name = &quot;Bandit Scrub&quot;;&#xA;" scaleX="1" scaleY="1" colour="4294967295" rotation="0"/>
   </instances>
   <tiles/>
   <PhysicsWorld>0</PhysicsWorld>

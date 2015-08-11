@@ -52,6 +52,9 @@ grid = 0;
 guardX = x;
 guardY = y;
 returning = false;
+
+//Reward &amp; Drops
+xp = 15 * level;
 </string>
           </argument>
         </arguments>
@@ -140,6 +143,10 @@ if (hp &lt;= 0 &amp;&amp; !dead) {
     dead = true;
     depth = 1;
     path_end();
+    
+    //Reward &amp; loot
+    var p = instance_find(obj_Player, 0);
+    p.xp += xp;
 }
 </string>
           </argument>
@@ -194,7 +201,7 @@ while (!wall &amp;&amp; aggroRange &lt; 16 * 24) {
 if (!dead) {
     if (target) {
         targetDist = distance_to_object(target);
-        if (targetDist &lt;= floor(aggroRange * 0.8)) {
+        if (targetDist &lt;= floor(aggroRange * 0.5)) {
             var x2 = x + lengthdir_x(aggroRange, image_angle + (fov / 2));
             var y2 = y + lengthdir_y(aggroRange, image_angle + (fov / 2));
             var x3 = x + lengthdir_x(aggroRange, image_angle - (fov / 2));
@@ -342,13 +349,13 @@ if (!dead) {
         c = c_yellow;
     }
     
-    var x2 = x + lengthdir_x(aggroRange, image_angle + (fov / 2));
-    var y2 = y + lengthdir_y(aggroRange, image_angle + (fov / 2));
-    var x3 = x + lengthdir_x(aggroRange, image_angle - (fov / 2));
-    var y3 = y + lengthdir_y(aggroRange, image_angle - (fov / 2));
+    var x2 = x - view_xview[0] + lengthdir_x(aggroRange, image_angle + (fov / 2));
+    var y2 = y - view_yview[0] + lengthdir_y(aggroRange, image_angle + (fov / 2));
+    var x3 = x - view_xview[0] + lengthdir_x(aggroRange, image_angle - (fov / 2));
+    var y3 = y - view_yview[0] + lengthdir_y(aggroRange, image_angle - (fov / 2));
     
     draw_set_alpha(0.2);
-        draw_triangle_colour(x, y, x2, y2, x3, y3, c, c, c, false);
+        draw_triangle_colour(x - view_xview[0], y - view_yview[0], x2, y2, x3, y3, c, c, c, false);
     draw_set_alpha(1);
 }
 </string>
