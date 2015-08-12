@@ -42,6 +42,8 @@
     <script>scripts\number_to_room.gml</script>
     <script>scripts\number_to_bg.gml</script>
     <script>scripts\room_to_number.gml</script>
+    <script>scripts\rollChance.gml</script>
+    <script>scripts\questInfo.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_NPC</font>

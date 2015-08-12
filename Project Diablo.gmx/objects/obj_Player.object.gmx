@@ -93,10 +93,12 @@ spawnOffset = false;
 //Interface variables
 showInventory = false;
 bagList = ds_list_create();
-ds_list_add(bagList, "Leather Chest/1");
+ALPHA = 0.6;
 
 //Quests
 quests = ds_map_create();
+quests[? "Valkyria's Welcome"] = false;
+quests[? "Revenge of Jotun"] = -1;
 </string>
           </argument>
         </arguments>
@@ -465,6 +467,7 @@ if (loadMap) {
     var rx = real(loadMap[| 9]);
     var ry = real(loadMap[| 10]);
     var bgNum = real(loadMap[| 11]);
+    var event = loadMap[| 12];
     
     /*
     show_message(
@@ -510,6 +513,15 @@ if (loadMap) {
     
     //Select random biome
     background_index[0] = number_to_bg(bgNum);
+    
+    //Spawn event
+    switch (event) {
+        case "Jotun": {
+            var npc = instance_create(1472, 832, obj_NPC);
+            npc.name = "Jotun";
+            break;
+        }
+    }
 }
 else {
     //Generate map
@@ -532,11 +544,12 @@ else {
     }
     
     //Remove walls listed (1 random)
+    var spawnChance = 60;
     var x1 = -1;
     var y1 = -1;
     if (ds_list_size(wallsTop)) {
         var wTop = map_check(mapList, mapX, mapY, "up");
-        if (pDir == "down" || wTop == 1 || (wTop == 0 &amp;&amp; choose(0, 1, 1))) {
+        if (pDir == "down" || wTop == 1 || (wTop == 0 &amp;&amp; rollChance(spawnChance))) {
             //Destroy top wall
             var wallNum = randomRound(0, ds_list_size(wallsTop) - 1);
             var wall = wallsTop[| wallNum];
@@ -558,7 +571,7 @@ else {
     y1 = -1;
     if (ds_list_size(wallsLeft)) {
         var wLeft = map_check(mapList, mapX, mapY, "left");
-        if (pDir == "right" || wLeft == 1 || (wLeft == 0 &amp;&amp; choose(0, 1, 1))) {
+        if (pDir == "right" || wLeft == 1 || (wLeft == 0 &amp;&amp; rollChance(spawnChance))) {
             //Destroy left wall
             var wallNum = randomRound(0, ds_list_size(wallsLeft) - 1);
             var wall = wallsLeft[| wallNum];
@@ -580,7 +593,7 @@ else {
     y1 = -1;
     if (ds_list_size(wallsBottom)) {
         var wBottom = map_check(mapList, mapX, mapY, "down");
-        if (pDir == "up" || wBottom == 1 || (wBottom == 0 &amp;&amp; choose(0, 1, 1))) {
+        if (pDir == "up" || wBottom == 1 || (wBottom == 0 &amp;&amp; rollChance(spawnChance))) {
             //Destroy bottom wall
             var wallNum = randomRound(0, ds_list_size(wallsBottom) - 1);
             var wall = wallsBottom[| wallNum];
@@ -602,7 +615,7 @@ else {
     y1 = -1;
     if (ds_list_size(wallsRight)) {
         var wRight = map_check(mapList, mapX, mapY, "right");
-        if (pDir == "left" || wRight == 1 || (wRight == 0 &amp;&amp; choose(0, 1, 1))) {
+        if (pDir == "left" || wRight == 1 || (wRight == 0 &amp;&amp; rollChance(spawnChance))) {
             //Destroy right wall
             var wallNum = randomRound(0, ds_list_size(wallsRight) - 1);
             var wall = wallsRight[| wallNum];
@@ -634,6 +647,21 @@ else {
     var bgNum = choose(0, 1);
     background_index[0] = number_to_bg(bgNum);
     wStr += "," + string(bgNum);
+    
+    //Spawn random events
+    switch (room) {
+        case rom_Forest2: {
+            if (!quests[? "Spawn Jotun"] &amp;&amp; rollChance(100)) {
+                //Spawn Jotun
+                var npc = instance_create(1472, 832, obj_NPC);
+                npc.name = "Jotun";
+                wStr += "," + "Jotun";
+                
+                quests[? "Spawn Jotun"] = true;
+                break;
+            }
+        }
+    }
     
     //Store data
     loadMap = string_explode(wStr, ",");
@@ -701,13 +729,15 @@ if (foundMap &gt; -1) {
 }
 else {
     //Select random room
-    var roomNum = 0;
+    var roomNum = choose(1, 2, 3);
+    /*
     switch (pDir) {
         case "up": {roomNum = choose(1, 2); break;}
         case "left": {roomNum = choose(1, 3); break;}
         case "down": {roomNum = choose(2, 3); break;}
         case "right": {roomNum = choose(3); break;}
     }
+    */
     
     //Set room to the corresponding number
     room = number_to_room(roomNum);
@@ -754,7 +784,7 @@ var w = string_width(txt) + (offset * 2);
 var h = string_height(txt) + (offset * 2);
 var xx = window_get_width() - w - offset;
 var yy = window_get_height() - h - offset;
-draw_set_alpha(0.4);
+draw_set_alpha(ALPHA);
     draw_rectangle_colour(xx, yy, xx + w, yy + h, c, c, c, c, false);
     
     //Draw hp bar
@@ -818,7 +848,7 @@ if (showInventory) {
     var fx = cx - (fw / 2);
     var fy = cy - (fh / 2);
     var c = c_black;
-    draw_set_alpha(0.4);
+    draw_set_alpha(ALPHA);
         draw_rectangle_colour(fx, fy, fx + fw, fy + fh, c, c, c, c, false);
     draw_set_alpha(1);
     
@@ -867,7 +897,7 @@ if (showInventory) {
                         var eix = ix - eiw;
                         var eiy = iy + (IH - eih);
                         
-                        draw_set_alpha(0.6);
+                        draw_set_alpha(ALPHA);
                             draw_rectangle_colour(eix, eiy, eix + eiw, eiy + eih, c, c, c, c, false);
                         draw_set_alpha(1);
                         
@@ -935,7 +965,60 @@ if (showInventory) {
           <argument>
             <kind>1</kind>
             <string>///Draw FPS
-draw_text(5, 5, "FPS: " + string(fps));
+//draw_text(5, 5, "FPS: " + string(fps));
+</string>
+          </argument>
+        </arguments>
+      </action>
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>///Draw quests
+var qTxt = "QUESTS:#";
+var qList = 0;
+var qKey = ds_map_find_first(quests);
+for (var i = 0; i &lt; ds_map_size(quests); i++) {
+    var qInfo = questInfo(quests, qKey, level);
+    var qLvl = qInfo[| 0];
+    var qStatus = qInfo[| 1];
+    var qDesc = qInfo[| 2];
+    
+    if (qLvl) {
+        if (qStatus != "done") {
+            if (qList) {qTxt += "#";}
+            qTxt += "#" + string(qKey) + "#- " + qDesc;
+            qList += 1;
+        }
+    }
+    
+    qKey = ds_map_find_next(quests, qKey);
+}
+
+var c = c_black;
+var x1 = 5;
+var y1 = 5;
+var off = 5;
+var x2 = x1 + string_width(qTxt) + (off * 2);
+var y2 = y1 + string_height(qTxt) + (off * 2);
+
+draw_set_alpha(ALPHA);
+    draw_rectangle_colour(x1, y1, x2, y2, c, c, c, c, false);
+draw_set_alpha(1);
+
+draw_text(x1 + off, y1 + off, qTxt);
 </string>
           </argument>
         </arguments>

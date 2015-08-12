@@ -38,6 +38,7 @@ lettersReadPerSecond = 7;
 speechDuration = (room_speed / lettersReadPerSecond);
 events = ds_map_create();
 alarm[2] = 1;
+ALPHA = 0.6;
 
 //Watching
 lookGoal = 0;
@@ -77,6 +78,8 @@ nearby = false;
             <string>///Set speeches
 alarm[0] = 0;
 
+ds_list_clear(speechList);
+
 var t = instance_nearest(x, y, obj_Player);
 switch (name) {
     case "Valkyria": {
@@ -89,13 +92,35 @@ switch (name) {
             ds_list_add(speechList, "You may move around by using the keys [A][S][D][W].");
             ds_list_add(speechList, "But before you go, be warned...#These woods are dangerous!");
             ds_list_add(speechList, "There are camps of bandits and#they will not treat you kindly.");
-            ds_list_add(speechList, "Best of luck to you!#Here, have 5 Apples for your journey."); //7
+            ds_list_add(speechList, "The world is generated randomly.#So if you run into an dead end.#You may press [T] to restart the game.");
+            ds_list_add(speechList, "Best of luck to you!#Here, have 5 Apples for your journey."); //8
         }
         else {
-            ds_list_clear(speechList);
             ds_list_add(speechList, "I wish you good luck!");
             //show_message("speechCount: " + string(ds_list_size(speechList)));
         }
+        break;
+    }
+    case "Jotun": {
+        if (t.quests[? "Revenge of Jotun"] == -1) {
+            ds_list_add(speechList, "Greetings lad! I'm Jotun.");
+            ds_list_add(speechList, "I have a quest for you!#You know them bandits?");
+            ds_list_add(speechList, "I'd like you to kill 5 of their Scrubs!#They can be found in open fields.");
+            ds_list_add(speechList, "Do this for me and I will#grant you a reward!"); //3
+        }
+        else if (t.quests[? "Revenge of Jotun"] == 5) {
+            ds_list_add(speechList, "Thank you very much!#Here is your reward!"); //0   
+        }
+        else if (t.quests[? "Revenge of Jotun"] == 6) {
+            ds_list_add(speechList, "Good to see you again mate.");
+        }      
+        else if (t.quests[? "Revenge of Jotun"] == 0) {
+            ds_list_add(speechList, "You're not done yet mate.#You have not killed any yet!");
+        }
+        else {
+            ds_list_add(speechList, "You're not done yet mate.#You have only killed " + string(t.quests[? "Revenge of Jotun"]) + " of 5.");
+        }
+
         break;
     }
 }
@@ -181,16 +206,40 @@ else {
           <argument>
             <kind>1</kind>
             <string>///Speech events
-switch(cName) {
+var t = instance_find(obj_Player, 0);
+switch(name) {
     case "Valkyria": {
-        if (!obj_Player.quests[? "Valkyria's Welcome"] &amp;&amp; speech == 7) {
-            obj_Player.quests[? "Valkyria's Welcome"] = true;
+        if (!t.quests[? "Valkyria's Welcome"] &amp;&amp; speech == 8) {
+            //Quest complete
+            t.quests[? "Valkyria's Welcome"] = true;
 
-            //Complete event, give apples and new speech
-            ds_list_add(obj_Player.bagList, "Apple/5");
+            //Give reward
+            ds_list_add(t.bagList, "Apple/5");
+            
+            //Set speech
             alarm[2] = alarm[0];
         }
         break;
+    }
+    case "Jotun": {
+        if (t.quests[? "Revenge of Jotun"] == -1 &amp;&amp; speech == 3) {
+            //Quest started
+            t.quests[? "Revenge of Jotun"] = 0;
+            
+            //Set speech
+            alarm[2] = alarm[0];
+        }
+        if (t.quests[? "Revenge of Jotun"] == 5 &amp;&amp; speech == 0) {
+            //Quest complete
+            t.quests[? "Revenge of Jotun"] = 6;
+            
+            //Give reward
+            ds_list_add(t.bagList, "Apple/5");
+            ds_list_add(t.bagList, "Leather Chest/1");
+            
+            //Set speech
+            alarm[2] = alarm[0];
+        }
     }
 }
 </string>
@@ -359,7 +408,7 @@ if (dead) {c = c_red;}
 cx = string_width(txt) / 2;
 cy = string_height(txt) / 2;
 yOff = y - view_yview[0] - 64;
-draw_set_alpha(0.4);
+draw_set_alpha(ALPHA);
     draw_rectangle_colour(x - view_xview[0] - cx, yOff - cy, x - view_xview[0] + cx, yOff + cy, c, c, c, c, false);
 draw_set_alpha(1);
 

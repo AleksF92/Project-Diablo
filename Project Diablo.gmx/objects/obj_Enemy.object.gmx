@@ -147,6 +147,17 @@ if (hp &lt;= 0 &amp;&amp; !dead) {
     //Reward &amp; loot
     var p = instance_find(obj_Player, 0);
     p.xp += xp;
+    
+    //Progress quest
+    switch (name) {
+        case "Bandit Scrub": {
+            if (p.quests[? "Revenge of Jotun"] &gt; -1) {
+                if (p.quests[? "Revenge of Jotun"] &lt; 5) {
+                    p.quests[? "Revenge of Jotun"] += 1;
+                }
+            }
+        }
+    }
 }
 </string>
           </argument>
@@ -307,8 +318,8 @@ if (hover || hit) {
     var by = yOff - cy - bh - 5;
     var c = c_black;
     if (dead) {c = c_red;}
-    var x1 = x - cx;
-    draw_rectangle_colour(x1, by, x + cx, by + bh, c, c, c, c, false);
+    var x1 = x - view_xview[0] - cx;
+    draw_rectangle_colour(x1, by, x - view_xview[0] + cx, by + bh, c, c, c, c, false);
     
     //Draw bar
     if (hp) {
